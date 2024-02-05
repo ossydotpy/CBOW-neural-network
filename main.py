@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from tmp_utils import TextProcessor
+from utils import TextProcessor
 from model import CBOW
 
 np.random.seed(32)
