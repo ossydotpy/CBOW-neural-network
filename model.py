@@ -12,10 +12,10 @@ class CBOW:
         self.targets = targets
         
 
-        self.weight_1 = 0.1 * np.random.rand(embedding_dim, vocab_size)
+        self.weight_1 = 0.1 * np.random.rand(vocab_size, embedding_dim)
         self.bias_1 = 0.1 * np.random.rand(vocab_size, 1)
 
-        self.weight_2 = 0.1 * np.random.rand(vocab_size, embedding_dim)
+        self.weight_2 = 0.1 * np.random.rand(embedding_dim, vocab_size)
         self.bias_2 = 0.1 * np.random.rand(embedding_dim, 1)
 
         self.raw_preds1 = None
