@@ -3,14 +3,10 @@ import numpy as np
 
 class CBOW:
 
-    def __init__(self, inputs, targets, vocab_size, embedding_dim, batch_size):
+    def __init__(self, vocab_size, embedding_dim, batch_size):
         self.batch_size = batch_size
         self.vocab_size = vocab_size
-        self.embedding_dim = embedding_dim
-
-        self.inputs = inputs.T
-        self.targets = targets.T
-        
+        self.embedding_dim = embedding_dim        
 
         self.weight_1 = 0.01 * np.random.rand(embedding_dim, vocab_size)
         self.bias_1 = 0.01 * np.random.rand(embedding_dim, 1)
@@ -23,6 +19,9 @@ class CBOW:
         self.relu_preds = 0
 
     def summary(self):
+        if self.inputs is None or self.targets is None:
+            raise ValueError("Inputs and targets have not been set. Use the set_inputs method before calling summary.")
+        
         print("CBOW Model Summary:")
         print("-------------------")
         print("Vocabulary Size:\t\t", self.vocab_size)
@@ -42,6 +41,9 @@ class CBOW:
         print("Bias 2 Shape:\t\t", self.bias_2.shape)
         print('_ '*20)
 
+    def set_inputs(self, inputs, targets):
+        self.inputs = inputs.T
+        self.targets = targets.T
 
     def relu(self, value):
         return np.maximum(0, value)
