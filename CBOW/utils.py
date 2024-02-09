@@ -6,6 +6,10 @@ class TextProcessor:
     def __init__(self, context_half_size):
         self.context_half_size = context_half_size
 
+    def get_vocabulary(self, words):
+        vocab = [word for word, idx in self.map_word2idx(words=words).items() ]
+        return vocab
+
     def sentence_tokenize(self, words: str):
         words = [token for token in re.findall(r'\w+|W', words)
                 if token.isalpha() or token == '.'
@@ -65,7 +69,7 @@ class DataGenerator:
                 context_vector = np.array([self.text_processor.word2vec(context_word, word2indx) for context_word in context_words]).mean(axis=0)
                 context_vectors_batch.append(context_vector)
                 target_vectors_batch.append(target_vector)
-            yield np.vstack(context_vectors_batch), np.array(target_vectors_batch)
+            yield np.vstack(context_vectors_batch), np.vstack(target_vectors_batch)
             index += batch_size
 
         if index < len(examples):
@@ -77,4 +81,4 @@ class DataGenerator:
                 context_vector = np.array([self.text_processor.word2vec(context_word, word2indx) for context_word in context_words]).mean(axis=0)
                 context_vectors_batch.append(context_vector)
                 target_vectors_batch.append(target_vector)
-            yield np.vstack(context_vectors_batch), np.array(target_vectors_batch)
+            yield np.vstack(context_vectors_batch), np.vstack(target_vectors_batch)

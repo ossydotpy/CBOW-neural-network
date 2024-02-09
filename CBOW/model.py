@@ -1,7 +1,11 @@
 import numpy as np
+import os
+
+from .config import SAVED_MODEL_DIR
+
 np.random.seed(42)
 
-class CBOW:
+class Model:
 
     def __init__(self, vocab_size, embedding_dim, batch_size):
         self.batch_size = batch_size
@@ -82,19 +86,16 @@ class CBOW:
         self.bias_2 -= (learning_rate * grad_b2)
 
     
-    def predict(self, inputs):
+    def predict(self, inputs: np.ndarray):
         x = inputs.T
-        z = self.weight_1.dot(x)
+        z = self.weight_1.dot(x) + self.bias_1
         activation = self.relu(z)
-        output = self.weight_2.dot(activation)
+        output = self.weight_2.dot(activation) + self.bias_2
         y_hat = self.softmax(output)
 
-        return np.argmax(y_hat, axis=0)
+        return np.argmax(y_hat, axis=1)
 
-
-    def get_weights(self):
-        ...
-
+    
 
     def save_model(self, file_path):
         model_params = {
@@ -103,6 +104,7 @@ class CBOW:
             'weight_2': self.weight_2,
             'bias_2': self.bias_2
         }
+        file_path = os.path.join(SAVED_MODEL_DIR, file_path)
         np.savez(file_path, **model_params)
         print("Model saved successfully.")
 
@@ -121,5 +123,4 @@ class CBOW:
         model.bias_1 = model_params['bias_1']
         model.bias_2 = model_params['bias_2']
 
-        print('model load sucessful.')
         return model
