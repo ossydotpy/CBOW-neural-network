@@ -8,19 +8,19 @@ class CBOW:
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
 
-        self.inputs = inputs
-        self.targets = targets
+        self.inputs = inputs.T
+        self.targets = targets.T
         
 
-        self.weight_1 = 0.1 * np.random.rand(vocab_size, embedding_dim)
-        self.bias_1 = 0.1 * np.random.rand(vocab_size, 1)
+        self.weight_1 = 0.01 * np.random.rand(embedding_dim, vocab_size)
+        self.bias_1 = 0.01 * np.random.rand(embedding_dim, 1)
 
-        self.weight_2 = 0.1 * np.random.rand(embedding_dim, vocab_size)
-        self.bias_2 = 0.1 * np.random.rand(embedding_dim, 1)
+        self.weight_2 = 0.01 * np.random.rand(vocab_size, embedding_dim)
+        self.bias_2 = 0.01 * np.random.rand(vocab_size, 1)
 
-        self.raw_preds1 = None
-        self.raw_preds2 = None
-        self.relu_preds = None
+        self.raw_preds1 = 0
+        self.raw_preds2 = 0
+        self.relu_preds = 0
 
     def summary(self):
         print("CBOW Model Summary:")
@@ -51,9 +51,9 @@ class CBOW:
         return exp_values / np.sum(exp_values, axis=1, keepdims=True)
 
     def forward(self):
-        self.raw_preds1 = self.weight_1.T.dot(self.inputs) + self.bias_1
+        self.raw_preds1 = self.weight_1.dot(self.inputs) + self.bias_1
         self.relu_preds = self.relu(self.raw_preds1)
-        self.raw_preds2 = self.weight_2.T.dot(self.relu_preds) + self.bias_2
+        self.raw_preds2 = self.weight_2.dot(self.relu_preds) + self.bias_2
         self.softmax_preds = self.softmax(self.raw_preds2)
         
 
@@ -64,10 +64,17 @@ class CBOW:
         return cost
     
     
-    def back_propagate():
-        pass
-    # // TODO
+    def back_propagate(self):
+        error_term = self.weight_2.T.dot(self.softmax_preds-self.targets)
+        
+        error_term[self.raw_preds1 < 0] = 0
 
+        grad_w1 = (1/self.batch_size) * error_term.dot(self.inputs.T)
+        grad_w2 = (1/self.batch_size) * (self.softmax_preds-self.targets).dot(self.relu_preds.T)
+        grad_b1 = (1/self.batch_size) * np.sum(error_term, axis=1, keepdims=True)
+        grad_b2 = (1/self.batch_size) * np.sum(self.softmax_preds-self.targets, axis=1, keepdims=True)
+
+        return grad_w1, grad_w2, grad_b1, grad_b2
     
 
     def gradient_descent(self, grad_w1, grad_b1, grad_w2, grad_b2, learning_rate=0.03):
