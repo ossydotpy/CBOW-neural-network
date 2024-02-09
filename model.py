@@ -80,3 +80,46 @@ class CBOW:
         self.weight_2 -= (learning_rate * grad_w2)
         self.bias_1 -= (learning_rate * grad_b1)
         self.bias_2 -= (learning_rate * grad_b2)
+
+    
+    def predict(self, inputs):
+        x = inputs.T
+        z = self.weight_1.dot(x)
+        activation = self.relu(z)
+        output = self.weight_2.dot(activation)
+        y_hat = self.softmax(output)
+
+        return np.argmax(y_hat, axis=0)
+
+
+    def get_weights(self):
+        ...
+
+
+    def save_model(self, file_path):
+        model_params = {
+            'weight_1': self.weight_1,
+            'bias_1': self.bias_1,
+            'weight_2': self.weight_2,
+            'bias_2': self.bias_2
+        }
+        np.savez(file_path, **model_params)
+        print("Model saved successfully.")
+
+    
+    @classmethod
+    def load_model(cls, file_path):
+        model_params = np.load(file=file_path)
+        model = cls(
+            vocab_size=model_params['weight_1'].shape[1], 
+            embedding_dim=model_params['weight_1'].shape[0], 
+            batch_size=None
+            )
+        
+        model.weight_1 = model_params['weight_1']
+        model.weight_2 = model_params['weight_2']
+        model.bias_1 = model_params['bias_1']
+        model.bias_2 = model_params['bias_2']
+
+        print('model load sucessful.')
+        return model

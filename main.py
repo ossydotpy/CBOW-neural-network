@@ -8,7 +8,7 @@ np.random.seed(42)
 
 BATCH_SIZE = 128
 DATA_DIR = 'datasets'
-SHAKESPEAR_FILE = 'shakespeare_data.txt'
+SHAKESPEAR_FILE = 'tmp_data.txt'
 FULL_PATH = os.path.join(DATA_DIR, SHAKESPEAR_FILE)
 
 with open(FULL_PATH) as f:
@@ -19,13 +19,13 @@ tmp_data = 'i am because i going in i well go far in here weel well weel'
 
 processor = TextProcessor(context_half_size=2)
 words = processor.sentence_tokenize(data)
-word2idx_dict = processor.word2idx(words)
+word2idx_dict = processor.word_idx_map(words)
 
 vocab_size = len(word2idx_dict)
 
 model = CBOW(vocab_size, embedding_dim=28, batch_size=BATCH_SIZE)
 
-def train_model(model: CBOW, words, word2idx_dict, num_epochs=5, batch_size=BATCH_SIZE, initial_alpha=0.03):
+def train_model(model: CBOW, words, word2idx_dict, num_epochs=5, batch_size=BATCH_SIZE, initial_alpha=0.03, model_name='model'):
     costs = []
 
     for epoch in tqdm(range(num_epochs)):
@@ -40,9 +40,13 @@ def train_model(model: CBOW, words, word2idx_dict, num_epochs=5, batch_size=BATC
             model.gradient_descent(grad_w1, grad_b1, grad_w2, grad_b2, learning_rate=alpha)
 
         costs.append(cost)
-        print(f'Epoch {epoch+1}/{num_epochs}, Average Cost: {cost}')
+        print(f'Epoch {epoch+1}/{num_epochs}[ Cost: {cost}]')
 
         if (epoch + 1) % 10 == 0:
             alpha *= 0.68
 
-    return model, costs
+        model.save_model(model_name)
+
+        return costs
+
+costs = train_model(model, words, word2idx_dict, num_epochs=5, batch_size=BATCH_SIZE ,initial_alpha=0.03, model_name='try_1')
