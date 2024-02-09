@@ -1,10 +1,12 @@
 import os
 import numpy as np
+from tqdm import tqdm
 from utils import TextProcessor
 from model import CBOW
 
-np.random.seed(32)
+np.random.seed(42)
 
+BATCH_SIZE = 128
 DATA_DIR = 'datasets'
 SHAKESPEAR_FILE = 'shakespeare_data.txt'
 FULL_PATH = os.path.join(DATA_DIR, SHAKESPEAR_FILE)
@@ -12,34 +14,35 @@ FULL_PATH = os.path.join(DATA_DIR, SHAKESPEAR_FILE)
 with open(FULL_PATH) as f:
     data = f.read()
 
-tmp_data = 'so it began, a new dawn had befalling man.'
+tmp_data = 'i am because i going in i well go far in here weel well weel'
 
 
-preprocesser = TextProcessor(context_half_size=2)
-words = preprocesser.sentence_tokenize(data)
-word2idx_dict = preprocesser.word2idx(words)
-
-batch_gen = preprocesser.get_batch_examples(words, word2idx_dict, batch_size=3)
-tmp_input, tmp_target = next(batch_gen)
+processor = TextProcessor(context_half_size=2)
+words = processor.sentence_tokenize(data)
+word2idx_dict = processor.word2idx(words)
 
 vocab_size = len(word2idx_dict)
 
-model = CBOW(tmp_input, tmp_target, vocab_size, embedding_dim=3, batch_size=3)
-model.summary()
-print('forwarding...')
+model = CBOW(vocab_size, embedding_dim=28, batch_size=BATCH_SIZE)
 
-num_epochs = 5
-for epoch in range(num_epochs):
-    total_loss = 0
-    model.forward()
-    print('end forwarding...')
-    print('Calculating costs...')
-    cost = model.CategoricalCrossEntropy()
-    print(cost)
-    grad_w1, grad_b1, grad_w2, grad_b2 = model.back_propagate()
+def train_model(model: CBOW, words, word2idx_dict, num_epochs=5, batch_size=BATCH_SIZE, initial_alpha=0.03):
+    costs = []
 
-    model.gradient_descent(grad_w1, grad_b1, grad_w2, grad_b2)
-        
-    print(f"Epoch {epoch+1}, Loss: {total_loss}")
+    for epoch in tqdm(range(num_epochs)):
+        alpha = initial_alpha
 
+        for x, y in tqdm(processor.get_batch_examples(words, word2idx_dict, batch_size)):
+            model.set_inputs(x, y)
+            model.forward()
+            cost = model.CategoricalCrossEntropy()
 
+            grad_w1, grad_b1, grad_w2, grad_b2 = model.back_propagate()
+            model.gradient_descent(grad_w1, grad_b1, grad_w2, grad_b2, learning_rate=alpha)
+
+        costs.append(cost)
+        print(f'Epoch {epoch+1}/{num_epochs}, Average Cost: {cost}')
+
+        if (epoch + 1) % 10 == 0:
+            alpha *= 0.68
+
+    return model, costs

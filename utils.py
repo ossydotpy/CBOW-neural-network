@@ -49,7 +49,7 @@ class TextProcessor:
 
         target_vector = self.word2vec(target_word, word2indx)
         context_vectors = np.array([self.word2vec(context_word, word2indx) for context_word in context_words]).mean(axis=0)
-        return context_vectors, target_vector
+        yield context_vectors, target_vector
 
     def get_batch_examples(self, words, word2indx, batch_size):
         examples = list(self.make_inputs_target(words))

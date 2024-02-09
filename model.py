@@ -1,5 +1,5 @@
 import numpy as np
-
+np.random.seed(42)
 
 class CBOW:
 
@@ -8,15 +8,12 @@ class CBOW:
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim        
 
-        self.weight_1 = 0.01 * np.random.rand(embedding_dim, vocab_size)
-        self.bias_1 = 0.01 * np.random.rand(embedding_dim, 1)
+        self.weight_1 = np.random.rand(embedding_dim, vocab_size)
+        self.bias_1 = np.random.rand(embedding_dim, 1)
 
-        self.weight_2 = 0.01 * np.random.rand(vocab_size, embedding_dim)
-        self.bias_2 = 0.01 * np.random.rand(vocab_size, 1)
+        self.weight_2 = np.random.rand(vocab_size, embedding_dim)
+        self.bias_2 = np.random.rand(vocab_size, 1)
 
-        self.raw_preds1 = 0
-        self.raw_preds2 = 0
-        self.relu_preds = 0
 
     def summary(self):
         if self.inputs is None or self.targets is None:
@@ -49,8 +46,7 @@ class CBOW:
         return np.maximum(0, value)
     
     def softmax(self, value):
-        exp_values = np.exp(value - np.max(value, axis=1, keepdims=True))
-        return exp_values / np.sum(exp_values, axis=1, keepdims=True)
+        return np.exp(value)/np.sum(np.exp(value), axis=0)
 
     def forward(self):
         self.raw_preds1 = self.weight_1.dot(self.inputs) + self.bias_1
@@ -61,7 +57,7 @@ class CBOW:
 
     def CategoricalCrossEntropy(self):
         log_probabilities = np.multiply(np.log(self.softmax_preds),self.targets )
-        cost = - (1/self.batch_size) * np.sum(log_probabilities)
+        cost = - 1/self.batch_size * np.sum(log_probabilities)
         cost = np.squeeze(cost)
         return cost
     
@@ -76,7 +72,7 @@ class CBOW:
         grad_b1 = (1/self.batch_size) * np.sum(error_term, axis=1, keepdims=True)
         grad_b2 = (1/self.batch_size) * np.sum(self.softmax_preds-self.targets, axis=1, keepdims=True)
 
-        return grad_w1, grad_w2, grad_b1, grad_b2
+        return grad_w1, grad_b1, grad_w2, grad_b2
     
 
     def gradient_descent(self, grad_w1, grad_b1, grad_w2, grad_b2, learning_rate=0.03):
