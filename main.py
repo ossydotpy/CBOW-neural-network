@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from tqdm import tqdm
-from utils import TextProcessor
+from utils import TextProcessor, DataGenerator
 from model import CBOW
 
 np.random.seed(42)
@@ -18,8 +18,10 @@ tmp_data = 'i am because i going in i well go far in here weel well weel'
 
 
 processor = TextProcessor(context_half_size=2)
+datagen = DataGenerator(context_half_size=2)
+
 words = processor.sentence_tokenize(data)
-word2idx_dict = processor.word_idx_map(words)
+word2idx_dict = processor.map_word2idx(words)
 
 vocab_size = len(word2idx_dict)
 
@@ -31,7 +33,7 @@ def train_model(model: CBOW, words, word2idx_dict, num_epochs=5, batch_size=BATC
     for epoch in tqdm(range(num_epochs)):
         alpha = initial_alpha
 
-        for x, y in tqdm(processor.get_batch_examples(words, word2idx_dict, batch_size)):
+        for x, y in tqdm(datagen.get_batch_examples(words, word2idx_dict, batch_size)):
             model.set_inputs(x, y)
             model.forward()
             cost = model.CategoricalCrossEntropy()
